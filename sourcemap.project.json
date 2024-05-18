@@ -1,11 +1,11 @@
 {
-	"name": "ThemeFramework",
+	"name": "tailwind",
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
 			"Packages": {
 				"$path": "packages",
-				"ThemeFramework": {
+				"tailwind": {
 					"$path": "src"
 				}
 			}

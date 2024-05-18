@@ -1,12 +1,12 @@
 {
-	"name": "ThemeFramework",
+	"name": "tailwind",
 	"emitLegacyScripts": false,
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
 			"Packages": {
 				"$path": "packages",
-				"ThemeFramework": {
+				"tailwind": {
 					"$path": "build"
 				}
 			}
