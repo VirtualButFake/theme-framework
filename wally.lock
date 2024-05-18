@@ -13,6 +13,11 @@ version = "0.0.136"
 dependencies = [["fusion", "elttob/fusion@0.2.0"]]
 
 [[package]]
+name = "virtualbutfake/tailwind"
+version = "0.0.13"
+dependencies = []
+
+[[package]]
 name = "virtualbutfake/themeframework"
-version = "0.0.1"
-dependencies = [["fusion", "elttob/fusion@0.2.0"], ["fusionUtils", "virtualbutfake/fusionutils@0.0.136"]]
+version = "0.0.11"
+dependencies = [["fusion", "elttob/fusion@0.2.0"], ["fusionUtils", "virtualbutfake/fusionutils@0.0.136"], ["tailwind", "virtualbutfake/tailwind@0.0.13"]]

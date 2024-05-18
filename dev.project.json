@@ -1,5 +1,5 @@
 {
-	"name": "ThemeFramework",
+	"name": "themeframework",
 	"emitLegacyScripts": false,
 	"tree": {
 		"$className": "DataModel",

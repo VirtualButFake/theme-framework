@@ -1,10 +1,9 @@
 local themeFramework = {}
 
+local tailwind = require("@packages/tailwind")
 local fusion = require("@packages/fusion")
 local Computed = fusion.Computed
 local Value = fusion.Value
-
-local tailwind = require("./tailwind")
 
 local fusionUtils = require("@packages/fusionUtils")
 local use = fusionUtils.use

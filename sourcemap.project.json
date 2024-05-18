@@ -1,5 +1,5 @@
 {
-	"name": "ThemeFramework",
+	"name": "themeframework",
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
