@@ -67,14 +67,18 @@ local function merge(source: { [any]: any }, override: { [any]: any })
 end
 
 local function defineComponentColorFunction(
-	callback: (isDark: boolean, primaryColor: tailwind.color) -> componentColor
+	callback: (themeName: string, primaryColor: tailwind.color) -> componentColor
 ): componentColorFunction
 	return function(themeName: string)
 		return function(primaryColor: string): componentColor?
-			local isDark = themeName == "Dark"
 			local primary = tailwind[primaryColor]
 
-			local stateTable: componentColor = callback(isDark, primary)
+            if primary == nil then
+                warn(`Could not find primary color {primaryColor}`)
+                return nil
+            end
+
+			local stateTable: componentColor = callback(themeName, primary)
 
 			if stateTable == nil then
 				return nil
@@ -104,7 +108,7 @@ local function defineComponentColorFunction(
 	end
 end
 
-function themeFramework.new(componentLocation: Instance, onBuild: (self: themeFramework) -> ()): themeFramework
+function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeFramework) -> ())?): themeFramework
 	local self = {
 		componentLocation = componentLocation,
 		componentFunctions = {},
@@ -142,7 +146,7 @@ function themeFramework.get(
 	variant: fusion.CanBeState<string>,
 	state: fusion.CanBeState<string>,
 	override: fusion.CanBeState<colorTable>?
-): (index: fusion.CanBeState<string>, reactive: boolean?) -> fusion.Computed<color> | color
+): useColorFunction
 	local overrideDepth = override and Computed(function()
 		return getDepth(use(override), 0)
 	end) or -1
@@ -186,11 +190,11 @@ function themeFramework.get(
 			return nil
 		end
 
-		local colorData = colorFunction(usedColorName)
+		local colorData = use(colorFunction)(usedColorName)
 
-		if colorData[usedState] == nil then
+		if colorData == nil or colorData[usedState] == nil then
 			warn(
-				`Could not get state within color for component {component}: {usedColorName} -> {usedVariant}.{usedState}`
+				`Could not get state within color (or the primary color) for component {component}: {usedColorName} -> {usedVariant}.{usedState}`
 			)
 			return nil
 		end
@@ -305,7 +309,7 @@ function themeFramework.build(self: themeFramework, theme: string): componentCol
 	end
 
 	if self.onBuild then
-		self:onBuild()
+		self:onBuild(theme)
 	end
 
 	return builtTheme
@@ -330,7 +334,9 @@ end
 
 type componentColorFunction = (themeName: string) -> getColorFunction
 type colorBase = { [string]: { [string]: getColorFunction } }
+
 export type getColorFunction = (primaryColor: string) -> componentColor
+export type useColorFunction = (index: fusion.CanBeState<string>, reactive: boolean?) -> fusion.Computed<color> | color
 
 export type componentColor = {
 	[string]: {
@@ -359,7 +365,7 @@ export type themeFramework = typeof(setmetatable(
 			},
 		},
 		theme: { [string]: { [string]: { [string]: getColorFunction } } },
-		onBuild: (self: themeFramework) -> (),
+		onBuild: (self: themeFramework, themeName: string) -> (),
 	},
 	{ __index = themeFramework }
 ))

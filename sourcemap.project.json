@@ -5,7 +5,7 @@
 		"ReplicatedStorage": {
 			"Packages": {
 				"$path": "packages",
-				"tailwind": {
+				"ThemeFramework": {
 					"$path": "src"
 				}
 			}
