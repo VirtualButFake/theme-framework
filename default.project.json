@@ -1,0 +1,7 @@
+{
+	"name": "ThemeFramework",
+    "emitLegacyScripts": false,
+	"tree": {
+		"$path": "build"
+	}
+}

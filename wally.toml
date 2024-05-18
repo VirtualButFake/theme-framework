@@ -1,0 +1,17 @@
+[package]
+name = "virtualbutfake/themeframework"
+description = "A straightforward theme framework, designed for use with Fusion 0.2"
+version = "0.0.01"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+include = [
+    "build",
+    "build/**",
+    "LICENSE.md",
+    "wally.toml",
+    "default.project.json"
+]
+exclude = ["*", "build.rbxl"]
+[dependencies]
+fusion = "elttob/fusion@0.2.0"
+fusionUtils = "virtualbutfake/fusionutils@0.0.136"

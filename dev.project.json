@@ -1,0 +1,15 @@
+{
+	"name": "ThemeFramework",
+	"emitLegacyScripts": false,
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"Packages": {
+				"$path": "packages",
+				"ThemeFramework": {
+					"$path": "build"
+				}
+			}
+		}
+	}
+}
