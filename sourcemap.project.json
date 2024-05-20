@@ -1,14 +1,9 @@
 {
 	"name": "themeframework",
 	"tree": {
-		"$className": "DataModel",
-		"ReplicatedStorage": {
-			"Packages": {
-				"$path": "packages",
-				"ThemeFramework": {
-					"$path": "src"
-				}
-			}
+		"$path": "packages",
+		"ThemeFramework": {
+			"$path": "src"
 		}
 	}
 }

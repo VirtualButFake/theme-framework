@@ -12,7 +12,7 @@
 				"name": "path",
 				"sources": {
 					"@packages": "packages",
-					"@src": "src"
+                    "@src": "src"
 				}
 			},
 			"target": {
