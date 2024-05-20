@@ -324,7 +324,9 @@ function themeFramework.load(self: themeFramework, builtTheme: componentColor, f
 			end
 		end
 	end)
+end
 
+function themeFramework.setFallback(self: themeFramework, fallback: Color3)
 	if self.fallback then
 		self.fallback:set(fallback)
 	else
