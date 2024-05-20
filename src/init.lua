@@ -309,7 +309,7 @@ function themeFramework.build(self: themeFramework, theme: string): componentCol
 	return builtTheme
 end
 
-function themeFramework.load(self: themeFramework, builtTheme: componentColor, fallback: Color3)
+function themeFramework.load(self: themeFramework, builtTheme: componentColor)
 	iterateDeep(builtTheme, function(path, value)
 		if typeof(value) ~= "table" then
 			local lastPath = path[#path]
