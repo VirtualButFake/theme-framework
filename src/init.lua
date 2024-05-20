@@ -73,10 +73,10 @@ local function defineComponentColorFunction(
 		return function(primaryColor: string): componentColor?
 			local primary = tailwind[primaryColor]
 
-            if primary == nil then
-                warn(`Could not find primary color {primaryColor}`)
-                return nil
-            end
+			if primary == nil then
+				warn(`Could not find primary color {primaryColor}`)
+				return nil
+			end
 
 			local stateTable: componentColor = callback(themeName, primary)
 
@@ -114,6 +114,7 @@ function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeF
 		componentFunctions = {},
 		theme = {},
 		onBuild = onBuild,
+		fallback = nil,
 	}
 
 	for _, component in componentLocation:GetChildren() do
@@ -136,7 +137,7 @@ function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeF
 		self.componentFunctions[component.Name] = themeTree
 	end
 
-	return setmetatable(self, { __index = themeFramework })
+	return setmetatable(self, { __index = themeFramework }) :: themeFramework
 end
 
 function themeFramework.get(
@@ -213,24 +214,23 @@ function themeFramework.get(
 	end)
 
 	return function(index: fusion.CanBeState<string>, reactive: boolean?): fusion.Computed<color> | color
+		local fallbackColor = {
+			color = self.fallback and self.fallback:get() or Color3.fromRGB(255, 255, 255),
+			transparency = 1,
+		}
+
 		if reactive then
 			return Computed(function()
 				local colorData = colorComputed:get()
 
 				if colorData == nil then
-					return {
-						color = Color3.fromRGB(255, 255, 255),
-						transparency = 1,
-					}
+					return fallbackColor
 				end
 
 				local color = colorData[use(index)]
 
 				if color == nil then
-					return {
-						color = Color3.fromRGB(255, 255, 255),
-						transparency = 1,
-					}
+					return fallbackColor
 				end
 
 				if use(overrideDepth) == 0 then
@@ -255,19 +255,13 @@ function themeFramework.get(
 		local colorData = colorComputed:get()
 
 		if colorData == nil then
-			return {
-				color = Color3.fromRGB(255, 255, 255),
-				transparency = 1,
-			}
+			return fallbackColor
 		end
 
 		local color = colorData[use(index)]
 
 		if color == nil then
-			return {
-				color = Color3.fromRGB(255, 255, 255),
-				transparency = 1,
-			}
+			return fallbackColor
 		end
 
 		if use(overrideDepth) == 0 then
@@ -315,7 +309,7 @@ function themeFramework.build(self: themeFramework, theme: string): componentCol
 	return builtTheme
 end
 
-function themeFramework.load(self: themeFramework, builtTheme: componentColor)
+function themeFramework.load(self: themeFramework, builtTheme: componentColor, fallback: Color3)
 	iterateDeep(builtTheme, function(path, value)
 		if typeof(value) ~= "table" then
 			local lastPath = path[#path]
@@ -330,6 +324,12 @@ function themeFramework.load(self: themeFramework, builtTheme: componentColor)
 			end
 		end
 	end)
+
+	if self.fallback then
+		self.fallback:set(fallback)
+	else
+		self.fallback = Value(fallback)
+	end
 end
 
 type componentColorFunction = (themeName: string) -> getColorFunction
@@ -366,6 +366,7 @@ export type themeFramework = typeof(setmetatable(
 		},
 		theme: { [string]: { [string]: { [string]: getColorFunction } } },
 		onBuild: (self: themeFramework, themeName: string) -> (),
+		fallback: fusion.Value<Color3>?,
 	},
 	{ __index = themeFramework }
 ))
