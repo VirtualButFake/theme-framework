@@ -191,9 +191,9 @@ function themeFramework.get(
 			return nil
 		end
 
-		local colorData = use(colorFunction)(usedColorName)
+		local success, colorData = pcall(use(colorFunction), usedColorName)
 
-		if colorData == nil or colorData[usedState] == nil then
+		if not success or colorData == nil or colorData[usedState] == nil then
 			warn(
 				`Could not get state within color (or the primary color) for component {component}: {usedColorName} -> {usedVariant}.{usedState}`
 			)
