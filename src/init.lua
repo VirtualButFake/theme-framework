@@ -39,7 +39,11 @@ local function iterateDeep(obj: any, callback: (path: { string }, value: any) ->
 end
 
 local function getDepth(tbl: { [any]: any }, depth: number): number?
-	for _, value in tbl do
+	for idx, value in tbl do
+		if typeof(value) == "Color3" and idx ~= "color" then
+			return depth + 1
+		end
+
 		if type(value) == "table" then
 			return getDepth(value, depth + 1)
 		end
@@ -58,6 +62,16 @@ local function merge(source: { [any]: any }, override: { [any]: any })
 			for idx, v in merged do
 				merged[idx] = merge(v, value)
 			end
+		end
+
+		if typeof(value) == "table" then
+			merged[key] = merge(source[key] or {}, value)
+			continue
+		end
+
+		if typeof(value) == "Color3" and key ~= "color" then
+			merged[key] = merge(source[key] or {}, { color = value, transparency = 0 })
+			continue
 		end
 
 		merged[key] = value
@@ -181,6 +195,7 @@ function themeFramework.get(
 		local indexedColor = baseColor[indexColor]
 
 		if use(overrideDepth) == 3 then
+			print(indexedColor)
 			indexedColor = merge(indexedColor, use(override))
 		end
 
