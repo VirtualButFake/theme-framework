@@ -14,5 +14,5 @@ include = [
 exclude = ["*", "build.rbxl"]
 [dependencies]
 fusion = "elttob/fusion@0.2.0"
-fusionUtils = "virtualbutfake/fusionutils@0.0.140"
+fusionUtils = "virtualbutfake/fusionutils@0.0.141"
 tailwind = "virtualbutfake/tailwind@0.0.135"
