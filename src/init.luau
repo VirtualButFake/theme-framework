@@ -229,13 +229,13 @@ function themeFramework.get(
 	end)
 
 	return function(index: fusion.CanBeState<string>, reactive: boolean?): fusion.Computed<color> | color
-		local fallbackColor = {
-			color = self.fallback and self.fallback:get() or Color3.fromRGB(255, 255, 255),
-			transparency = 1,
-		}
-
 		if reactive then
 			return Computed(function()
+                local fallbackColor = {
+                    color = self.fallback and self.fallback:get() or Color3.fromRGB(255, 255, 255),
+                    transparency = 1,
+                }
+
 				local colorData = colorComputed:get()
 
 				if colorData == nil then
@@ -266,6 +266,12 @@ function themeFramework.get(
 				}
 			end)
 		end
+
+        -- we move this dependency here instead of at the top so that no unneeded dependencies are registered resulting in unneeded rerenders
+        local fallbackColor = {
+			color = self.fallback and self.fallback:get() or Color3.fromRGB(255, 255, 255),
+			transparency = 1,
+		}
 
 		local colorData = colorComputed:get()
 
