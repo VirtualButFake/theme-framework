@@ -1,7 +1,6 @@
 {
-	"name": "theme-framework",
-    "emitLegacyScripts": false,
+	"name": "ThemeFramework",
 	"tree": {
-		"$path": "build"
+		"$path": "dist"
 	}
 }

@@ -1,14 +1,14 @@
 {
-	"name": "theme-framework",
-	"emitLegacyScripts": false,
+	"name": "ThemeFramework",
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
 			"Packages": {
-				"$path": "packages",
+				"$className": "Folder",
 				"ThemeFramework": {
-					"$path": "build"
-				}
+					"$path": "dist"
+				},
+				"$path": "packages"
 			}
 		}
 	}
