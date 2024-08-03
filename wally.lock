@@ -9,15 +9,15 @@ dependencies = []
 
 [[package]]
 name = "virtualbutfake/fusion-utils"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [["fusion", "elttob/fusion@0.2.0"]]
 
 [[package]]
 name = "virtualbutfake/tailwind"
-version = "0.0.135"
+version = "0.1.1"
 dependencies = []
 
 [[package]]
 name = "virtualbutfake/theme-framework"
-version = "0.1.0"
-dependencies = [["fusion", "elttob/fusion@0.2.0"], ["fusionUtils", "virtualbutfake/fusion-utils@0.1.0"], ["tailwind", "virtualbutfake/tailwind@0.0.135"]]
+version = "0.1.2"
+dependencies = [["fusion", "elttob/fusion@0.2.0"], ["fusionUtils", "virtualbutfake/fusion-utils@0.1.2"], ["tailwind", "virtualbutfake/tailwind@0.1.1"]]
