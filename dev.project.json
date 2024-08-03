@@ -1,11 +1,11 @@
 {
-	"name": "ThemeFramework",
+	"name": "theme-framework",
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
 			"Packages": {
 				"$className": "Folder",
-				"ThemeFramework": {
+				"theme-framework": {
 					"$path": "dist"
 				},
 				"$path": "packages"
