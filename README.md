@@ -20,7 +20,7 @@ By default, ThemeFramework supports three values within a color: `color`, `trans
 
 ThemeFramework is available on Wally [here](https://wally.run/package/virtualbutfake/theme-framework).
 
-An in-depth guide on how to set ThemeFramework up for usage can be found in the [FusionComponents Getting Started guide](https://docs.tijne.net/fusioncomponents/getting-started)
+An in-depth guide on how to set ThemeFramework up for usage can be found in the [FusionComponents Getting Started guide](https://docs.tijne.net/fusioncomponents/getting-started).
 
 ## Documentation
 
