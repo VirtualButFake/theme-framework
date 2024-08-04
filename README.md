@@ -1,6 +1,7 @@
-<div align="center"
+<div align="center">
 
 # ThemeFramework
+
 
 A dynamic theming engine for Fusion.
 
