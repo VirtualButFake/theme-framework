@@ -26,6 +26,10 @@ An in-depth guide on how to set ThemeFramework up for usage can be found in the 
 
 An extensive documentation of ThemeFramework is available [here](https://docs.tijne.net/fusioncomponents/libs/theme-framework)
 
+## Changelog
+
+The changelog can be found [here](CHANGELOG.md).
+
 ## Contributing
 
 Contributions are always welcomed. Code should follow Stylua and Selene formatting conventions. To contribute, fork this repository, make your changes, and create a pull request. Please make sure to test your changes before creating a pull request.

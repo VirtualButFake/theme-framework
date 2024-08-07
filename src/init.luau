@@ -221,7 +221,7 @@ function themeFramework.get(
 		return stateData
 	end)
 
-	return function(index: fusion.CanBeState<string>, reactive: boolean?): fusion.Computed<color> | color
+	return function(index, reactive)
 		if reactive then
 			return Computed(function()
 				local fallbackColor = {
@@ -352,7 +352,10 @@ type componentColorFunction = (themeName: string) -> getColorFunction
 type colorBase = { [string]: { [string]: getColorFunction } }
 
 export type getColorFunction = (primaryColor: string) -> componentColorList
-export type useColorFunction = (index: fusion.CanBeState<string>, reactive: boolean?) -> fusion.Computed<color> | color
+export type useColorFunction = (
+	index: fusion.CanBeState<string>,
+	reactive: true
+) -> fusion.Computed<color> & (index: fusion.CanBeState<string>, reactive: boolean?) -> color
 
 export type componentColorList = {
 	[string]: {
