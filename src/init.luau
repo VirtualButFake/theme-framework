@@ -166,28 +166,12 @@ function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeF
 end
 
 function themeFramework.addLocation(self: themeFramework, componentLocation: Instance)
-	-- compute the new component functions
-	local newComponentFunctions = {}
+    local newComponentFunctions = {}
+	computeColorFunctions(componentLocation, newComponentFunctions)
 
-	for _, component in componentLocation:GetChildren() do
-		local themeTree: {
-			[string]: {
-				[string]: componentColorFunction,
-			},
-		} = {}
-
-		for _, color in component:GetChildren() do
-			local variants = {}
-
-			for _, variant in color:GetChildren() do
-				variants[variant.Name] = defineComponentColorFunction(require(variant) :: any)
-			end
-
-			themeTree[color.Name] = variants
-		end
-
-		newComponentFunctions[component.Name] = themeTree
-	end
+    local oldLocations = self.alternativeComponentLocations:get()
+    table.insert(oldLocations, newComponentFunctions)
+    self.alternativeComponentLocations:set(oldLocations)
 end
 
 function themeFramework.get(
