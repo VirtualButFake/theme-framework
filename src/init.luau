@@ -126,14 +126,48 @@ local function defineComponentColorFunction(
 	end
 end
 
+local function computeColorFunctions(
+	location: Instance,
+	storage: { [string]: { [string]: { [string]: componentColorFunction } } }
+)
+	for _, component in location:GetChildren() do
+		local themeTree: {
+			[string]: {
+				[string]: componentColorFunction,
+			},
+		} = {}
+
+		for _, color in component:GetChildren() do
+			local variants = {}
+
+			for _, variant in color:GetChildren() do
+				variants[variant.Name] = defineComponentColorFunction(require(variant) :: any)
+			end
+
+			themeTree[color.Name] = variants
+		end
+
+		storage[component.Name] = themeTree
+	end
+end
+
 function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeFramework) -> ())?): themeFramework
 	local self = {
 		componentLocation = componentLocation,
+		alternativeComponentLocations = Value({}),
 		componentFunctions = {},
 		theme = {},
 		onBuild = onBuild,
 		fallback = nil,
 	}
+
+	computeColorFunctions(componentLocation, self.componentFunctions)
+	return setmetatable(self, { __index = themeFramework }) :: themeFramework
+end
+
+function themeFramework.addLocation(self: themeFramework, componentLocation: Instance)
+	-- compute the new component functions
+	local newComponentFunctions = {}
 
 	for _, component in componentLocation:GetChildren() do
 		local themeTree: {
@@ -152,10 +186,8 @@ function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeF
 			themeTree[color.Name] = variants
 		end
 
-		self.componentFunctions[component.Name] = themeTree
+		newComponentFunctions[component.Name] = themeTree
 	end
-
-	return setmetatable(self, { __index = themeFramework }) :: themeFramework
 end
 
 function themeFramework.get(
@@ -171,7 +203,20 @@ function themeFramework.get(
 	end) or -1
 
 	local colorComputed = Computed(function()
-		local baseColor: colorBase = self.theme[component]
+        local baseColor: colorBase
+
+        for _, location in self.alternativeComponentLocations:get() do
+            baseColor = location[component]
+
+            if baseColor then
+                break
+            end
+        end
+
+        if not baseColor then
+            baseColor = self.theme[component]
+        end
+
 		local usedColorName = use(colorName)
 		local usedVariant = use(variant)
 		local usedState = use(state)
@@ -352,10 +397,9 @@ type componentColorFunction = (themeName: string) -> getColorFunction
 type colorBase = { [string]: { [string]: getColorFunction } }
 
 export type getColorFunction = (primaryColor: string) -> componentColorList
-export type useColorFunction = ((
-	index: fusion.CanBeState<string>,
-	reactive: true
-) -> fusion.Computed<color>) & ((index: fusion.CanBeState<string>, reactive: false?) -> color)
+export type useColorFunction =
+	((index: fusion.CanBeState<string>, reactive: true) -> fusion.Computed<color>)
+	& ((index: fusion.CanBeState<string>, reactive: false?) -> color)
 
 export type componentColorList = {
 	[string]: {
@@ -386,10 +430,11 @@ export type optionalColorTable = colorOptional | {
 export type themeFramework = typeof(setmetatable(
 	{} :: {
 		componentLocation: Instance,
+		alternativeComponentLocations: fusion.Value<{ { [string]: { [string]: { [string]: getColorFunction } } } }>,
 		componentFunctions: {
 			[string]: {
 				[string]: {
-					[string]: getColorFunction,
+					[string]: componentColorFunction,
 				},
 			},
 		},
