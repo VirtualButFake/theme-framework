@@ -166,12 +166,12 @@ function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeF
 end
 
 function themeFramework.addLocation(self: themeFramework, componentLocation: Instance)
-    local newComponentFunctions = {}
+	local newComponentFunctions = {}
 	computeColorFunctions(componentLocation, newComponentFunctions)
 
-    local oldLocations = self.alternativeComponentLocations:get()
-    table.insert(oldLocations, newComponentFunctions)
-    self.alternativeComponentLocations:set(oldLocations)
+	local oldLocations = self.alternativeComponentLocations:get()
+	table.insert(oldLocations, newComponentFunctions)
+	self.alternativeComponentLocations:set(oldLocations)
 end
 
 function themeFramework.get(
@@ -187,19 +187,19 @@ function themeFramework.get(
 	end) or -1
 
 	local colorComputed = Computed(function()
-        local baseColor: colorBase
+		local baseColor: colorBase
 
-        for _, location in self.alternativeComponentLocations:get() do
-            baseColor = location[component]
+		for _, location in self.alternativeComponentLocations:get() do
+			baseColor = location[component]
 
-            if baseColor then
-                break
-            end
-        end
+			if baseColor then
+				break
+			end
+		end
 
-        if not baseColor then
-            baseColor = self.theme[component]
-        end
+		if not baseColor then
+			baseColor = self.theme[component]
+		end
 
 		local usedColorName = use(colorName)
 		local usedVariant = use(variant)
