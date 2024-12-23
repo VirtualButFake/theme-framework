@@ -2,11 +2,9 @@ local themeFramework = {}
 
 local tailwind = require("@packages/tailwind")
 local fusion = require("@packages/fusion")
-local Computed = fusion.Computed
-local Value = fusion.Value
+local peek = fusion.peek
 
-local fusionUtils = require("@packages/fusionUtils")
-local use = fusionUtils.use
+local types = require("./types")
 
 local function traverseObject(obj: any, path: { string })
 	for _, part in path do
@@ -151,15 +149,19 @@ local function computeColorFunctions(
 	end
 end
 
-function themeFramework.new(componentLocation: Instance, onBuild: ((self: themeFramework) -> ())?): themeFramework
+function themeFramework.new(
+	scope: types.Scope,
+	componentLocation: Instance,
+	onBuild: ((self: themeFramework) -> ())?
+): themeFramework
 	local self = {
 		componentLocation = componentLocation,
-		alternativeComponentLocations = Value({}),
+		alternativeComponentLocations = scope:Value({}),
 		componentFunctions = {},
 		theme = {},
 		onBuild = onBuild,
-		fallback = nil,
-	}
+		_scope = scope,
+	} :: themeFrameworkData
 
 	computeColorFunctions(componentLocation, self.componentFunctions)
 	return setmetatable(self, { __index = themeFramework }) :: themeFramework
@@ -169,27 +171,28 @@ function themeFramework.addLocation(self: themeFramework, componentLocation: Ins
 	local newComponentFunctions = {}
 	computeColorFunctions(componentLocation, newComponentFunctions)
 
-	local oldLocations = self.alternativeComponentLocations:get()
+	local oldLocations = peek(self.alternativeComponentLocations)
 	table.insert(oldLocations, newComponentFunctions)
 	self.alternativeComponentLocations:set(oldLocations)
 end
 
 function themeFramework.get(
 	self: themeFramework,
+	scope: types.Scope,
 	component: string,
-	colorName: fusion.CanBeState<string>,
-	variant: fusion.CanBeState<string>,
-	state: fusion.CanBeState<string>,
-	override: fusion.CanBeState<optionalColorTable>?
+	colorName: fusion.UsedAs<string>,
+	variant: fusion.UsedAs<string>,
+	state: fusion.UsedAs<string>,
+	override: fusion.UsedAs<optionalColorTable>?
 ): useColorFunction
-	local overrideDepth = override and Computed(function()
+	local overrideDepth = override and scope:Computed(function(use)
 		return getDepth(use(override), 0)
 	end) or -1
 
-	local colorComputed = Computed(function()
+	local colorComputed = scope:Computed(function(use)
 		local baseColor: colorBase
 
-		for _, location in self.alternativeComponentLocations:get() do
+		for _, location in use(self.alternativeComponentLocations) do
 			baseColor = location[component]
 
 			if baseColor then
@@ -252,9 +255,9 @@ function themeFramework.get(
 
 	return function(index, reactive)
 		if reactive then
-			return Computed(function()
+			return scope:Computed(function(use)
 				local fallbackColor = {
-					color = self.fallback and self.fallback:get() or Color3.fromRGB(255, 255, 255),
+					color = self.fallback and use(self.fallback) or Color3.fromRGB(255, 255, 255),
 					transparency = 1,
 				}
 
@@ -291,37 +294,37 @@ function themeFramework.get(
 
 		-- we move this dependency here instead of at the top so that no unneeded dependencies are registered resulting in unneeded rerenders
 		local fallbackColor = {
-			color = self.fallback and self.fallback:get() or Color3.fromRGB(255, 255, 255),
+			color = self.fallback and peek(self.fallback) or Color3.fromRGB(255, 255, 255),
 			transparency = 1,
 		}
 
-		local colorData = colorComputed:get()
+		local colorData = peek(colorComputed)
 
 		if colorData == nil then
 			return fallbackColor
 		end
 
-		local color = colorData[use(index)]
+		local color = colorData[peek(index)]
 
 		if color == nil then
 			return fallbackColor
 		end
 
-		if use(overrideDepth) == 0 then
-			local overrideTable = use(override) :: color
+		if peek(overrideDepth) == 0 then
+			local overrideTable = peek(override) :: color
 			local originalColor = {
-				transparency = use(color.transparency),
-				color = use(color.color),
-				shadow = use(color.shadow),
+				transparency = peek(color.transparency),
+				color = peek(color.color),
+				shadow = peek(color.shadow),
 			}
 
 			return merge(originalColor, overrideTable)
 		end
 
 		return {
-			color = use(color.color),
-			transparency = use(color.transparency),
-			shadow = use(color.shadow),
+			color = peek(color.color),
+			transparency = peek(color.transparency),
+			shadow = peek(color.shadow),
 		}
 	end
 end
@@ -361,8 +364,8 @@ function themeFramework.load(self: themeFramework, builtTheme: componentColorLis
 			local traversed = traverseObject(self.theme, path)
 
 			if traversed[lastPath] == nil then
-				traversed[lastPath] = Value(value)
-			elseif traversed[lastPath]:get() ~= value then
+				traversed[lastPath] = (self._scope :: types.Scope):Value(value)
+			elseif peek(traversed[lastPath]) ~= value then
 				traversed[lastPath]:set(value)
 			end
 		end
@@ -371,9 +374,9 @@ end
 
 function themeFramework.setFallback(self: themeFramework, fallback: Color3)
 	if self.fallback then
-		self.fallback:set(fallback)
+		(self.fallback :: types.Value<Color3>):set(fallback)
 	else
-		self.fallback = Value(fallback)
+		self.fallback = (self._scope :: types.Scope):Value(fallback)
 	end
 end
 
@@ -382,8 +385,8 @@ type colorBase = { [string]: { [string]: getColorFunction } }
 
 export type getColorFunction = (primaryColor: string) -> componentColorList
 export type useColorFunction =
-	((index: fusion.CanBeState<string>, reactive: true) -> fusion.Computed<color>)
-	& ((index: fusion.CanBeState<string>, reactive: false?) -> color)
+	((index: fusion.UsedAs<string>, reactive: true) -> fusion.Computed<color>)
+	& ((index: fusion.UsedAs<string>, reactive: false?) -> color)
 
 export type componentColorList = {
 	[string]: {
@@ -411,22 +414,22 @@ export type optionalColorTable = colorOptional | {
 	[string]: optionalColorTable,
 }
 
-export type themeFramework = typeof(setmetatable(
-	{} :: {
-		componentLocation: Instance,
-		alternativeComponentLocations: fusion.Value<{ { [string]: { [string]: { [string]: getColorFunction } } } }>,
-		componentFunctions: {
+type themeFrameworkData = {
+	componentLocation: Instance,
+	alternativeComponentLocations: types.Value<{ { [string]: { [string]: { [string]: getColorFunction } } } }>,
+	componentFunctions: {
+		[string]: {
 			[string]: {
-				[string]: {
-					[string]: componentColorFunction,
-				},
+				[string]: componentColorFunction,
 			},
 		},
-		theme: { [string]: { [string]: { [string]: getColorFunction } } },
-		onBuild: (self: themeFramework, themeName: string) -> (),
-		fallback: fusion.Value<Color3>?,
 	},
-	{ __index = themeFramework }
-))
+	theme: { [string]: { [string]: { [string]: getColorFunction } } },
+	onBuild: (self: themeFramework, themeName: string) -> (),
+	fallback: types.Value<Color3>?,
+	_scope: types.Scope,
+}
+
+export type themeFramework = typeof(setmetatable({} :: themeFrameworkData, { __index = themeFramework }))
 
 return themeFramework

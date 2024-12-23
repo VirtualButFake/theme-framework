@@ -1,0 +1,12 @@
+{
+	"aliases": {
+		"packages": "./packages"
+	},
+	"languageMode": "nonstrict",
+	"lintErrors": false,
+	"typeErrors": true,
+	"lint": {
+		"*": true,
+		"LocalShadow": false
+	}
+}

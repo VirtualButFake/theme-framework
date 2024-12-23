@@ -11,8 +11,8 @@ executeCommand("wally", {
 	"install",
 }, nil, true)
 
-if not fs.isDir("packages") then 
-    fs.writeDir("packages")
+if not fs.isDir("packages") then
+	fs.writeDir("packages")
 end
 
 -- do this so the project file doesn't refer to files that don't exist and cause rojo to fail
@@ -32,9 +32,9 @@ if fs.isDir("Packages") then
 		"--sourcemap",
 		"sourcemap.json",
 		"./Packages",
-	}) 
+	}, nil, true)
 
-    fs.move("./Packages", "./packages", true)
+	fs.move("./Packages", "./packages", true)
 end
 
 logger:info("Installed packages!")
