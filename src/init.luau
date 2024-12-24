@@ -62,8 +62,8 @@ local function merge(source: { [any]: any }, override: { [any]: any })
 			end
 		end
 
-		if typeof(value) == "table" and value.get then
-			value = value:get()
+		if typeof(value) == "table" and value.kind == "State" then
+			value = peek(value)
 		end
 
 		if typeof(value) == "table" then
@@ -261,7 +261,7 @@ function themeFramework.get(
 					transparency = 1,
 				}
 
-				local colorData = colorComputed:get()
+				local colorData = use(colorComputed)
 
 				if colorData == nil then
 					return fallbackColor
