@@ -1,6 +1,7 @@
 # 1.0.0 (wip)
 
 - Update to Fusion 0.3
+- Fix type definition for `onBuild` in `themeFramework.new`
 
 # 0.1.6
 

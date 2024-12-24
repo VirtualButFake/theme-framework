@@ -152,7 +152,7 @@ end
 function themeFramework.new(
 	scope: types.Scope,
 	componentLocation: Instance,
-	onBuild: ((self: themeFramework) -> ())?
+	onBuild: ((self: themeFramework, themeName: string) -> ())?
 ): themeFramework
 	local self = {
 		componentLocation = componentLocation,
