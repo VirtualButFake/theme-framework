@@ -258,8 +258,6 @@ function themeFramework.get(
 		if typeof(scopeOrUse) == "table" then
 			local inner: types.Scope = scopeOrUse:deriveScope()
 
-			table.insert(self._scopes, inner)
-
 			return inner:Computed(function(use)
 				local fallbackColor = {
 					color = self.fallback and use(self.fallback) or Color3.fromRGB(255, 255, 255),
