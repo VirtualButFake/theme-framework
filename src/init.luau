@@ -160,7 +160,8 @@ function themeFramework.new(
 		componentFunctions = {},
 		theme = {},
 		onBuild = onBuild,
-		_scope = scope,
+		_mainScope = scope,
+		_scopes = {},
 	} :: themeFrameworkData
 
 	computeColorFunctions(componentLocation, self.componentFunctions)
@@ -253,9 +254,13 @@ function themeFramework.get(
 		return stateData
 	end)
 
-	return function(index, reactive)
-		if reactive then
-			return scope:Computed(function(use)
+	return function(index, scopeOrUse)
+		if typeof(scopeOrUse) == "table" then
+			local inner: types.Scope = scopeOrUse:deriveScope()
+
+			table.insert(self._scopes, inner)
+
+			return inner:Computed(function(use)
 				local fallbackColor = {
 					color = self.fallback and use(self.fallback) or Color3.fromRGB(255, 255, 255),
 					transparency = 1,
@@ -292,39 +297,41 @@ function themeFramework.get(
 			end)
 		end
 
+		local useValue = (scopeOrUse :: fusion.Use) or peek
+
 		-- we move this dependency here instead of at the top so that no unneeded dependencies are registered resulting in unneeded rerenders
 		local fallbackColor = {
-			color = self.fallback and peek(self.fallback) or Color3.fromRGB(255, 255, 255),
+			color = self.fallback and useValue(self.fallback) or Color3.fromRGB(255, 255, 255),
 			transparency = 1,
 		}
 
-		local colorData = peek(colorComputed)
+		local colorData = useValue(colorComputed)
 
 		if colorData == nil then
 			return fallbackColor
 		end
 
-		local color = colorData[peek(index)]
+		local color = colorData[useValue(index)]
 
 		if color == nil then
 			return fallbackColor
 		end
 
-		if peek(overrideDepth) == 0 then
-			local overrideTable = peek(override) :: color
+		if useValue(overrideDepth) == 0 then
+			local overrideTable = useValue(override) :: color
 			local originalColor = {
-				transparency = peek(color.transparency),
-				color = peek(color.color),
-				shadow = peek(color.shadow),
+				transparency = useValue(color.transparency),
+				color = useValue(color.color),
+				shadow = useValue(color.shadow),
 			}
 
 			return merge(originalColor, overrideTable)
 		end
 
 		return {
-			color = peek(color.color),
-			transparency = peek(color.transparency),
-			shadow = peek(color.shadow),
+			color = useValue(color.color),
+			transparency = useValue(color.transparency),
+			shadow = useValue(color.shadow),
 		}
 	end
 end
@@ -356,6 +363,12 @@ function themeFramework.build(self: themeFramework, theme: string): componentCol
 end
 
 function themeFramework.load(self: themeFramework, builtTheme: componentColorList)
+	-- remove all previous scopes
+	for i, scope in self._scopes do
+		fusion.doCleanup(scope)
+		self._scopes[i] = nil
+	end
+
 	iterateDeep(builtTheme, function(path, value)
 		if typeof(value) ~= "table" then
 			local lastPath = path[#path]
@@ -364,7 +377,7 @@ function themeFramework.load(self: themeFramework, builtTheme: componentColorLis
 			local traversed = traverseObject(self.theme, path)
 
 			if traversed[lastPath] == nil then
-				traversed[lastPath] = (self._scope :: types.Scope):Value(value)
+				traversed[lastPath] = (self._mainScope :: types.Scope):Value(value)
 			elseif peek(traversed[lastPath]) ~= value then
 				traversed[lastPath]:set(value)
 			end
@@ -376,7 +389,7 @@ function themeFramework.setFallback(self: themeFramework, fallback: Color3)
 	if self.fallback then
 		(self.fallback :: types.Value<Color3>):set(fallback)
 	else
-		self.fallback = (self._scope :: types.Scope):Value(fallback)
+		self.fallback = (self._mainScope :: types.Scope):Value(fallback)
 	end
 end
 
@@ -385,8 +398,8 @@ type colorBase = { [string]: { [string]: getColorFunction } }
 
 export type getColorFunction = (primaryColor: string) -> componentColorList
 export type useColorFunction =
-	((index: fusion.UsedAs<string>, reactive: true) -> fusion.Computed<color>)
-	& ((index: fusion.UsedAs<string>, reactive: false?) -> color)
+	((index: fusion.UsedAs<string>, scopeOrUse: types.Scope) -> fusion.Computed<color>)
+	& ((index: fusion.UsedAs<string>, scopeOrUse: fusion.Use) -> color)
 
 export type componentColorList = {
 	[string]: {
@@ -427,7 +440,8 @@ type themeFrameworkData = {
 	theme: { [string]: { [string]: { [string]: getColorFunction } } },
 	onBuild: (self: themeFramework, themeName: string) -> (),
 	fallback: types.Value<Color3>?,
-	_scope: types.Scope,
+	_mainScope: types.Scope,
+	_scopes: { types.Scope },
 }
 
 export type themeFramework = typeof(setmetatable({} :: themeFrameworkData, { __index = themeFramework }))
